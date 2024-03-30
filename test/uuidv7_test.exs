@@ -1,5 +1,5 @@
 defmodule UUIDv7Test do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
 
   doctest UUIDv7
 

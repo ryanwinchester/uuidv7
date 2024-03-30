@@ -17,15 +17,25 @@ defmodule UUIDv7 do
   Generates a version 7 UUID using microseconds for increased clock precision.
   """
   @spec generate() :: t
-  def generate(), do: encode(bingenerate())
+  def generate, do: bingenerate() |> encode()
 
   @doc """
   Generates a version 7 UUID in the binary format.
   """
   @spec bingenerate() :: raw
-  def bingenerate() do
-    time = System.system_time(:microsecond)
+  def bingenerate do
+    System.system_time(:microsecond) |> from_timestamp()
+  end
 
+  @doc """
+  Generates a version 7 UUID from an existing microsecond timestamp.
+  """
+  @spec from_timestamp(pos_integer() | DateTime.t()) :: raw()
+  def from_timestamp(%DateTime{} = datetime) do
+    DateTime.to_unix(datetime, :microsecond) |> from_timestamp()
+  end
+
+  def from_timestamp(time) when is_integer(time) do
     # Replace left-most random bits (rand_a) with increased clock precision.
     # We could use up to 12 bits, but since using microseconds, we only need
     # to use 10 bits. The remaining 2, can be rand_a.
@@ -36,34 +46,6 @@ defmodule UUIDv7 do
     <<rand_a::2, rand_b::62>> = :crypto.strong_rand_bytes(8)
 
     <<ms::big-unsigned-48, 7::4, extra_time::big-unsigned-10, rand_a::2, 2::2, rand_b::62>>
-  end
-
-  @doc """
-  Generate a UUIDv7 from an existing microsecond timestamp.
-  """
-  @spec from_timestamp(pos_integer() | DateTime.t()) :: raw()
-  def from_timestamp(%DateTime{} = datetime) do
-    datetime
-    |> DateTime.to_unix()
-    |> from_timestamp()
-  end
-
-  def from_timestamp(timestamp) when is_integer(timestamp) do
-    swap_time(bingenerate(), timestamp)
-  end
-
-  @doc """
-  Swap the time part of a version 7 UUID.
-  """
-  @spec swap_time(raw(), pos_integer()) :: raw()
-  def swap_time(<<_::128>> = uuid, timestamp) when is_integer(timestamp) do
-    ms = div(timestamp, 1000)
-    us = rem(timestamp, 1000)
-    extra_time = trunc(us / 1000 * 1024)
-
-    <<_::62, rest::binary>> = uuid
-
-    <<ms::big-unsigned-48, 7::4, extra_time::big-unsigned-10, rest::binary>>
   end
 
   @spec encode(raw) :: t
@@ -96,7 +78,7 @@ defmodule UUIDv7 do
   defp e(14), do: ?e
   defp e(15), do: ?f
 
-  @spec decode(t) :: raw
+  @spec decode(t) :: raw | :error
   def decode(
         <<a1, a2, a3, a4, a5, a6, a7, a8, ?-, b1, b2, b3, b4, ?-, c1, c2, c3, c4, ?-, d1, d2, d3,
           d4, ?-, e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12>>

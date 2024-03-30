@@ -1,5 +1,10 @@
 # UUIDv7
 
+[![CI](https://github.com/ryanwinchester/uuidv7/actions/workflows/ci.yml/badge.svg)](https://github.com/ryanwinchester/uuidv7/actions/workflows/ci.yml)
+ [![Hex.pm](https://img.shields.io/hexpm/v/uuid_v7)](https://hex.pm/packages/uuid_v7)
+ [![Hex.pm](https://img.shields.io/hexpm/dt/uuid_v7)](https://hex.pm/packages/uuid_v7)
+ [![Hex.pm](https://img.shields.io/hexpm/l/uuid_v7)](https://github.com/ryanwinchester/uuidv7/blob/main/LICENSE)
+
 UUIDv7 for Elixir and Ecto, using microseconds.
 
 ## Installation
@@ -9,7 +14,7 @@ The package can be installed by adding `uuid_v7` to your list of dependencies in
 ```elixir
 def deps do
   [
-    {:uuid_v7, "~> 0.1.0"}
+    {:uuid_v7, "~> 0.2.0"}
   ]
 end
 ```

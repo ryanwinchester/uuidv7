@@ -6,7 +6,7 @@ defmodule UUIDv7.MixProject do
   def project do
     [
       app: :uuid_v7,
-      version: "0.1.0",
+      version: "0.2.0",
       elixir: "~> 1.16",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
@@ -28,7 +28,9 @@ defmodule UUIDv7.MixProject do
   defp deps do
     [
       {:ecto, "~> 3.0", optional: true},
-      {:ex_doc, "~> 0.31", only: :dev, runtime: false}
+      {:ex_doc, "~> 0.31", only: :dev, runtime: false},
+      {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
+      {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false}
     ]
   end
 
