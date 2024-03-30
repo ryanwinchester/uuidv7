@@ -15,7 +15,6 @@ jobs:
         os: ['ubuntu-latest']
         elixir: ['1.16.x']
         otp: ['26.x']
-        nodejs: ['20.x']
     steps:
       # Setup.
       - name: Checkout repo
