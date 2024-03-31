@@ -40,11 +40,16 @@ defmodule UUIDv7 do
   def generate, do: bingenerate() |> encode()
 
   @doc """
-  Generates a version 7 UUID using microseconds for increased clock precision.
+  Generates a version 7 UUID from a microsecond timestamp.
+
+  > #### Note {: .warning}
+  >
+  > This assumes that you are providing a microsecond-precision timestamp.
 
   ## Example
 
-      iex> UUIDv7.generate()
+      iex> timestamp = DateTime.utc_now()
+      iex> UUIDv7.generate(timestamp)
       "018e90d8-06e8-7f9f-bfd7-6730ba98a51b"
 
   """
@@ -68,6 +73,10 @@ defmodule UUIDv7 do
   @doc """
   Generates a version 7 UUID from an existing microsecond timestamp.
 
+  > #### Note {: .warning}
+  >
+  > This assumes that you are providing a microsecond-precision timestamp.
+
   ## Examples
 
       iex> timestamp = System.system_time(:microsecond)
@@ -79,7 +88,7 @@ defmodule UUIDv7 do
       <<1, 142, 144, 216, 6, 232, 127, 159, 191, 215, 103, 48, 186, 152, 165, 27>>
 
   """
-  @spec bingenerate(pos_integer | DateTime.t()) :: raw
+  @spec bingenerate(integer | DateTime.t()) :: raw
   def bingenerate(%DateTime{} = datetime) do
     DateTime.to_unix(datetime, :microsecond) |> bingenerate()
   end
