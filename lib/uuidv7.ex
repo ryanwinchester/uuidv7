@@ -40,6 +40,18 @@ defmodule UUIDv7 do
   def generate, do: bingenerate() |> encode()
 
   @doc """
+  Generates a version 7 UUID using microseconds for increased clock precision.
+
+  ## Example
+
+      iex> UUIDv7.generate()
+      "018e90d8-06e8-7f9f-bfd7-6730ba98a51b"
+
+  """
+  @spec generate(DateTime.t() | integer()) :: t
+  def generate(timestamp), do: bingenerate(timestamp) |> encode()
+
+  @doc """
   Generates a version 7 UUID in the binary format.
 
   ## Example
@@ -50,7 +62,7 @@ defmodule UUIDv7 do
   """
   @spec bingenerate() :: raw
   def bingenerate do
-    System.system_time(:microsecond) |> from_timestamp()
+    System.system_time(:microsecond) |> bingenerate()
   end
 
   @doc """
@@ -59,20 +71,20 @@ defmodule UUIDv7 do
   ## Examples
 
       iex> timestamp = System.system_time(:microsecond)
-      iex> UUIDv7.from_timestamp(timestamp)
+      iex> UUIDv7.bingenerate(timestamp)
       <<1, 142, 144, 216, 6, 232, 127, 159, 191, 215, 103, 48, 186, 152, 165, 27>>
 
       iex> timestamp = DateTime.utc_now()
-      iex> UUIDv7.from_timestamp(timestamp)
+      iex> UUIDv7.bingenerate(timestamp)
       <<1, 142, 144, 216, 6, 232, 127, 159, 191, 215, 103, 48, 186, 152, 165, 27>>
 
   """
-  @spec from_timestamp(pos_integer | DateTime.t()) :: raw
-  def from_timestamp(%DateTime{} = datetime) do
-    DateTime.to_unix(datetime, :microsecond) |> from_timestamp()
+  @spec bingenerate(pos_integer | DateTime.t()) :: raw
+  def bingenerate(%DateTime{} = datetime) do
+    DateTime.to_unix(datetime, :microsecond) |> bingenerate()
   end
 
-  def from_timestamp(time) when is_integer(time) do
+  def bingenerate(time) when is_integer(time) do
     # Replace left-most random bits (rand_a) with increased clock precision.
     # We could use up to 12 bits, but since using microseconds, we only need
     # to use 10 bits. The remaining 2, can be rand_a.
