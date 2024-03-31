@@ -1,7 +1,7 @@
 defmodule UUIDv7Test do
   use ExUnit.Case, async: true
 
-  doctest UUIDv7
+  doctest UUIDv7, except: [:moduledoc, generate: 0, bingenerate: 0, from_timestamp: 1]
 
   test "generates uuid string" do
     assert <<_::288>> = UUIDv7.generate()

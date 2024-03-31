@@ -1,6 +1,20 @@
 defmodule UUIDv7 do
   @moduledoc """
-  UUIDv7 for Elixir (and Ecto).
+  UUIDv7 for Elixir.
+
+  Used for generating version 7 UUIDs using microseconds for increased clock
+  precision.
+
+  Includes `Ecto.Type` implementations.
+
+  ## Examples
+
+      iex> UUIDv7.generate()
+      "018e90d8-06e8-7f9f-bfd7-6730ba98a51b"
+
+      iex> UUIDv7.bingenerate()
+      <<1, 142, 144, 216, 6, 232, 127, 159, 191, 215, 103, 48, 186, 152, 165, 27>>
+
   """
 
   @typedoc """
@@ -15,12 +29,24 @@ defmodule UUIDv7 do
 
   @doc """
   Generates a version 7 UUID using microseconds for increased clock precision.
+
+  ## Example
+
+      iex> UUIDv7.generate()
+      "018e90d8-06e8-7f9f-bfd7-6730ba98a51b"
+
   """
   @spec generate() :: t
   def generate, do: bingenerate() |> encode()
 
   @doc """
   Generates a version 7 UUID in the binary format.
+
+  ## Example
+
+      iex> UUIDv7.bingenerate()
+      <<1, 142, 144, 216, 6, 232, 127, 159, 191, 215, 103, 48, 186, 152, 165, 27>>
+
   """
   @spec bingenerate() :: raw
   def bingenerate do
@@ -29,6 +55,17 @@ defmodule UUIDv7 do
 
   @doc """
   Generates a version 7 UUID from an existing microsecond timestamp.
+
+  ## Examples
+
+      iex> timestamp = System.system_time(:microsecond)
+      iex> UUIDv7.from_timestamp(timestamp)
+      <<1, 142, 144, 216, 6, 232, 127, 159, 191, 215, 103, 48, 186, 152, 165, 27>>
+
+      iex> timestamp = DateTime.utc_now()
+      iex> UUIDv7.from_timestamp(timestamp)
+      <<1, 142, 144, 216, 6, 232, 127, 159, 191, 215, 103, 48, 186, 152, 165, 27>>
+
   """
   @spec from_timestamp(pos_integer() | DateTime.t()) :: raw()
   def from_timestamp(%DateTime{} = datetime) do
@@ -48,6 +85,15 @@ defmodule UUIDv7 do
     <<ms::big-unsigned-48, 7::4, extra_time::big-unsigned-10, rand_a::2, 2::2, rand_b::62>>
   end
 
+  @doc """
+  Encode a raw UUID to the string representation.
+
+  ## Example
+
+      iex> UUIDv7.encode(<<1, 142, 144, 216, 6, 232, 127, 159, 191, 215, 103, 48, 186, 152, 165, 27>>)
+      "018e90d8-06e8-7f9f-bfd7-6730ba98a51b"
+
+  """
   @spec encode(raw) :: t
   def encode(
         <<a1::4, a2::4, a3::4, a4::4, a5::4, a6::4, a7::4, a8::4, b1::4, b2::4, b3::4, b4::4,
@@ -78,6 +124,15 @@ defmodule UUIDv7 do
   defp e(14), do: ?e
   defp e(15), do: ?f
 
+  @doc """
+  Decode a string representation of a UUID to the raw binary version.
+
+  ## Example
+
+      iex> UUIDv7.decode("018e90d8-06e8-7f9f-bfd7-6730ba98a51b")
+      <<1, 142, 144, 216, 6, 232, 127, 159, 191, 215, 103, 48, 186, 152, 165, 27>>
+
+  """
   @spec decode(t) :: raw | :error
   def decode(
         <<a1, a2, a3, a4, a5, a6, a7, a8, ?-, b1, b2, b3, b4, ?-, c1, c2, c3, c4, ?-, d1, d2, d3,
@@ -154,6 +209,7 @@ defmodule UUIDv7 do
         {:ok, "77617265-686f-7573-6520-776f726b6572"}
 
     """
+    @doc group: :ecto
     @impl Ecto.Type
     @spec cast(t | raw | any) :: {:ok, t} | :error
     def cast(uuid)
@@ -177,6 +233,7 @@ defmodule UUIDv7 do
     @doc """
     Same as `cast/1` but raises `Ecto.CastError` on invalid arguments.
     """
+    @doc group: :ecto
     @spec cast!(t | raw | any) :: t
     def cast!(uuid) do
       case cast(uuid) do
@@ -214,6 +271,7 @@ defmodule UUIDv7 do
     @doc """
     Converts a string representing a UUID into a raw binary.
     """
+    @doc group: :ecto
     @impl Ecto.Type
     @spec dump(uuid_string :: t | any) :: {:ok, raw} | :error
     def dump(uuid_string)
@@ -228,6 +286,7 @@ defmodule UUIDv7 do
     @doc """
     Same as `dump/1` but raises `Ecto.ArgumentError` on invalid arguments.
     """
+    @doc group: :ecto
     @spec dump!(t | any) :: raw
     def dump!(uuid) do
       with :error <- decode(uuid) do
@@ -238,6 +297,7 @@ defmodule UUIDv7 do
     @doc """
     Converts a binary UUID into a string.
     """
+    @doc group: :ecto
     @impl Ecto.Type
     @spec load(raw | any) :: {:ok, t} | :error
     def load(<<_::128>> = raw_uuid), do: {:ok, encode(raw_uuid)}
@@ -253,6 +313,7 @@ defmodule UUIDv7 do
     @doc """
     Same as `load/1` but raises `Ecto.ArgumentError` on invalid arguments.
     """
+    @doc group: :ecto
     @spec load!(raw | any) :: t
     def load!(value) do
       case load(value) do

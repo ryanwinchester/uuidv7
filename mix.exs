@@ -1,19 +1,23 @@
 defmodule UUIDv7.MixProject do
   use Mix.Project
 
+  @version "0.2.4"
+
   @repo_url "https://github.com/ryanwinchester/uuidv7"
 
   def project do
     [
       app: :uuid_v7,
-      version: "0.2.1",
+      version: @version,
       elixir: "~> 1.16",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       description: description(),
       package: package(),
       source_url: @repo_url,
-      homepage_url: @repo_url
+      homepage_url: @repo_url,
+      name: "UUIDv7",
+      docs: docs()
     ]
   end
 
@@ -44,7 +48,24 @@ defmodule UUIDv7.MixProject do
   defp package do
     [
       licenses: ["MIT"],
-      links: %{"GitHub" => @repo_url}
+      links: %{"GitHub" => @repo_url},
+      maintainers: ["Ryan Winchester"]
+    ]
+  end
+
+  defp docs do
+    [
+      main: "readme",
+      api_reference: false,
+      extras: ["README.md"],
+      source_url: @repo_url,
+      groups_for_docs: [
+        Types: &(&1[:kind] == :type),
+        "Ecto.Type Functions": fn fun ->
+          fun[:group] == :ecto or fun[:name] in [:embed_as, :equal?]
+        end,
+        Functions: &(&1[:kind] == :function)
+      ]
     ]
   end
 end
