@@ -22,4 +22,10 @@ defmodule UUIDv7Test do
     assert decoded = UUIDv7.decode(uuid)
     assert ^uuid = UUIDv7.encode(decoded)
   end
+
+  test "get_timestamp/1 gets the original timestamp" do
+    assert timestamp = 1_711_827_060_456_999
+    assert uuid = UUIDv7.from_timestamp(timestamp) |> UUIDv7.encode()
+    assert UUIDv7.get_timestamp(uuid) == timestamp
+  end
 end
