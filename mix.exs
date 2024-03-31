@@ -35,7 +35,10 @@ defmodule UUIDv7.MixProject do
   end
 
   defp description do
-    "UUIDv7 for Elixir (and Ecto) using microseconds"
+    """
+    UUID v7 with additional clock precision using microseconds.
+    Uses Section 6.2, Method 3 from the IETF Draft.
+    """
   end
 
   defp package do
