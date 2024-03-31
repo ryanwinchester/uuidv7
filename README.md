@@ -7,6 +7,10 @@
 
 UUIDv7 for Elixir and Ecto, using microseconds.
 
+Uses the method described in **[Section 6.2](https://www.ietf.org/archive/id/draft-ietf-uuidrev-rfc4122bis-14.html#name-monotonicity-and-counters), Method 3**
+from [this IETF Draft](https://www.ietf.org/archive/id/draft-ietf-uuidrev-rfc4122bis-14.html)
+to add additional clock precision using microseconds to a version 7 UUID.
+
 ## Installation
 
 The package can be installed by adding `uuid_v7` to your list of dependencies in `mix.exs`:
@@ -30,6 +34,8 @@ iex> UUIDv7.bingenerate()
 ```
 
 ## Usage with Ecto
+
+Use this the same way you would use `Ecto.UUID`:
 
 ```elixir
 defmodule MyApp.Blog.Post do
