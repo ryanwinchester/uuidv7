@@ -67,7 +67,7 @@ defmodule UUIDv7 do
       <<1, 142, 144, 216, 6, 232, 127, 159, 191, 215, 103, 48, 186, 152, 165, 27>>
 
   """
-  @spec from_timestamp(pos_integer() | DateTime.t()) :: raw()
+  @spec from_timestamp(pos_integer | DateTime.t()) :: raw
   def from_timestamp(%DateTime{} = datetime) do
     DateTime.to_unix(datetime, :microsecond) |> from_timestamp()
   end
@@ -78,11 +78,34 @@ defmodule UUIDv7 do
     # to use 10 bits. The remaining 2, can be rand_a.
     ms = div(time, 1000)
     us = rem(time, 1000)
-    extra_time = trunc(us / 1000 * 1024)
 
     <<rand_a::2, rand_b::62>> = :crypto.strong_rand_bytes(8)
 
-    <<ms::big-unsigned-48, 7::4, extra_time::big-unsigned-10, rand_a::2, 2::2, rand_b::62>>
+    <<ms::big-unsigned-48, 7::4, us::big-unsigned-10, rand_a::2, 2::2, rand_b::62>>
+  end
+
+  @doc """
+  Extract the timestamp (microsecond) from the UUID.
+
+  > #### Note {: .warning}
+  >
+  > This assumes that the v7 UUID is encoded with the extra microsecond
+  > precision in the 10 bits after the version.
+
+  ## Example
+
+      iex> UUIDv7.get_timestamp("018e90d8-06e8-7f9f-bfd7-6730ba98a51b")
+      1711827060456999
+
+  """
+  @spec get_timestamp(t | raw) :: integer
+  def get_timestamp(<<_::288>> = uuid) do
+    decode(uuid) |> get_timestamp()
+  end
+
+  def get_timestamp(<<_::128>> = raw) do
+    <<ms::big-unsigned-48, 7::4, us::big-unsigned-10, _::66>> = raw
+    ms * 1000 + us
   end
 
   @doc """
