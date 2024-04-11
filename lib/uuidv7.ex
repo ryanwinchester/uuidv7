@@ -2,7 +2,7 @@ defmodule UUIDv7 do
   @moduledoc """
   UUIDv7 for Elixir.
 
-  Used for generating version 7 UUIDs using microseconds for increased clock
+  Used for generating version 7 UUIDs using submillisecond clock
   precision.
 
   Includes `Ecto.Type` implementations.
@@ -17,6 +17,8 @@ defmodule UUIDv7 do
 
   """
 
+  alias UUIDv7.Clock
+
   @typedoc """
   A hex-encoded UUID string.
   """
@@ -28,7 +30,7 @@ defmodule UUIDv7 do
   @type raw :: <<_::128>>
 
   @doc """
-  Generates a version 7 UUID using microseconds for increased clock precision.
+  Generates a version 7 UUID using submilliseconds for increased clock precision.
 
   ## Example
 
@@ -40,23 +42,6 @@ defmodule UUIDv7 do
   def generate, do: bingenerate() |> encode()
 
   @doc """
-  Generates a version 7 UUID from a microsecond timestamp.
-
-  > #### Note {: .warning}
-  >
-  > This assumes that you are providing a microsecond-precision timestamp.
-
-  ## Example
-
-      iex> timestamp = DateTime.utc_now()
-      iex> UUIDv7.generate(timestamp)
-      "018e90d8-06e8-7f9f-bfd7-6730ba98a51b"
-
-  """
-  @spec generate(DateTime.t() | integer()) :: t
-  def generate(timestamp), do: bingenerate(timestamp) |> encode()
-
-  @doc """
   Generates a version 7 UUID in the binary format.
 
   ## Example
@@ -65,68 +50,33 @@ defmodule UUIDv7 do
       <<1, 142, 144, 216, 6, 232, 127, 159, 191, 215, 103, 48, 186, 152, 165, 27>>
 
   """
-  @spec bingenerate() :: raw
   def bingenerate do
-    System.system_time(:microsecond) |> bingenerate()
+    <<rand_a::17, _::1, rand_b::38>> = :crypto.strong_rand_bytes(7)
+
+    {time, clock} = Clock.next(<<rand_a::17>>)
+
+    <<clock_a::big-unsigned-12, clock_b::big-unsigned-6>> = clock
+
+    <<time::big-unsigned-48, 7::4, clock_a::big-unsigned-12, 2::2, clock_b::big-unsigned-6,
+      rand_b::56>>
   end
 
   @doc """
-  Generates a version 7 UUID from an existing microsecond timestamp.
-
-  > #### Note {: .warning}
-  >
-  > This assumes that you are providing a microsecond-precision timestamp.
-
-  ## Examples
-
-      iex> timestamp = System.system_time(:microsecond)
-      iex> UUIDv7.bingenerate(timestamp)
-      <<1, 142, 144, 216, 6, 232, 127, 159, 191, 215, 103, 48, 186, 152, 165, 27>>
-
-      iex> timestamp = DateTime.utc_now()
-      iex> UUIDv7.bingenerate(timestamp)
-      <<1, 142, 144, 216, 6, 232, 127, 159, 191, 215, 103, 48, 186, 152, 165, 27>>
-
-  """
-  @spec bingenerate(integer | DateTime.t()) :: raw
-  def bingenerate(%DateTime{} = datetime) do
-    DateTime.to_unix(datetime, :microsecond) |> bingenerate()
-  end
-
-  def bingenerate(time) when is_integer(time) do
-    # Replace left-most random bits (rand_a) with increased clock precision.
-    # We could use up to 12 bits, but since using microseconds, we only need
-    # to use 10 bits. The remaining 2, can be rand_a.
-    ms = div(time, 1000)
-    us = rem(time, 1000)
-
-    <<rand_a::2, rand_b::62>> = :crypto.strong_rand_bytes(8)
-
-    <<ms::big-unsigned-48, 7::4, us::big-unsigned-10, rand_a::2, 2::2, rand_b::62>>
-  end
-
-  @doc """
-  Extract the timestamp (microsecond) from the UUID.
-
-  > #### Note {: .warning}
-  >
-  > This assumes that the v7 UUID is encoded with the extra microsecond
-  > precision in the 10 bits after the version.
+  Extract the millisecond timestamp from the UUID.
 
   ## Example
 
-      iex> UUIDv7.get_timestamp("018e90d8-06e8-7f9f-bfd7-6730ba98a51b")
-      1711827060456999
+      iex> UUIDv7.extract_timestamp("018ecb40-c457-73e6-a400-000398daddd9")
+      1712807003223
 
   """
-  @spec get_timestamp(t | raw) :: integer
-  def get_timestamp(<<_::288>> = uuid) do
-    decode(uuid) |> get_timestamp()
+  @spec extract_timestamp(t | raw) :: integer
+  def extract_timestamp(<<_::288>> = uuid) do
+    decode(uuid) |> extract_timestamp()
   end
 
-  def get_timestamp(<<_::128>> = raw) do
-    <<ms::big-unsigned-48, 7::4, us::big-unsigned-10, _::66>> = raw
-    ms * 1000 + us
+  def extract_timestamp(<<ms::big-unsigned-48, 7::4, _::76>>) do
+    ms
   end
 
   @doc """
