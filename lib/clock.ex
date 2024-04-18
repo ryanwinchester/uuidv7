@@ -37,7 +37,14 @@ defmodule UUIDv7.Clock do
   """
   @spec next(counter_seed()) :: {timestamp(), counter()}
   def next(<<seed::17>>) do
+    timestamp_ref = :persistent_term.get(:timestamp_ref)
+    previous_ts = :atomics.get(timestamp_ref, 1)
     current_ts = System.system_time(:millisecond)
+
+    # Time leap backwards protection.
+    current_ts = if current_ts < previous_ts, do: previous_ts, else: current_ts
+
+    :atomics.put(timestamp_ref, 1, current_ts)
 
     clock =
       with @threshold <- update_counter(current_ts, seed) do
