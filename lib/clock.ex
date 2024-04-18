@@ -1,6 +1,5 @@
 defmodule UUIDv7.Clock do
   @moduledoc false
-  # Add docs later.
   use GenServer
 
   @type timestamp :: integer()
@@ -37,7 +36,7 @@ defmodule UUIDv7.Clock do
   """
   @spec next(counter_seed()) :: {timestamp(), counter()}
   def next(<<seed::17>>) do
-    timestamp_ref = :persistent_term.get(:timestamp_ref)
+    timestamp_ref = :persistent_term.get(__MODULE__)
     previous_ts = :atomics.get(timestamp_ref, 1)
     current_ts = System.system_time(:millisecond)
 
@@ -99,15 +98,11 @@ defmodule UUIDv7.Clock do
   # The best option I can find to have a counter that resets for every
   # millisecond tick is to use the millisecond timestamp as the keys for
   # en `ets` table and use `update_counter`. It avoids having to use a
-  # GenServer or have an ever-increasing monotonic integer that doesn't reset
-  # and introduces the chance of rollover which would break sort order every
-  # time this occurs.
+  # GenServer for state, or have an ever-increasing monotonic integer that
+  # doesn't reset and introduces the chance of rollover (which would break sort
+  # order every time this occurs).
   defp update_counter(ts, seed) do
     :ets.update_counter(__MODULE__, ts, 1, {ts, seed})
-  end
-
-  defp schedule_cleanup(interval_ms) do
-    Process.send_after(self(), :cleanup, interval_ms)
   end
 
   # The thing that bothers me the most about this implementation is the
@@ -116,5 +111,9 @@ defmodule UUIDv7.Clock do
   defp cleanup(cutoff) do
     timestamp = System.system_time(:millisecond) - cutoff
     :ets.select_delete(__MODULE__, [{{:"$1", :_}, [{:<, :"$1", timestamp}], [true]}])
+  end
+
+  defp schedule_cleanup(interval_ms) do
+    Process.send_after(self(), :cleanup, interval_ms)
   end
 end
