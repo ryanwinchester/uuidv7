@@ -82,7 +82,7 @@ defmodule UUIDv7.Clock do
   end
 
   # ----------------------------------------------------------------------------
-  # Helpers
+  # Private API
   # ----------------------------------------------------------------------------
 
   defp create_table do
@@ -95,17 +95,17 @@ defmodule UUIDv7.Clock do
     ])
   end
 
-  # The best option I can find to have a counter that resets for every
+  # The current best solution for having a counter that resets for every
   # millisecond tick is to use the millisecond timestamp as the keys for
   # en `ets` table and use `update_counter`. It avoids having to use a
   # GenServer for state, or have an ever-increasing monotonic integer that
   # doesn't reset and introduces the chance of rollover (which would break sort
-  # order every time this occurs).
+  # order every time this occurs). Any better ideas? Submit an issue.
   defp update_counter(ts, seed) do
     :ets.update_counter(__MODULE__, ts, 1, {ts, seed})
   end
 
-  # The thing that bothers me the most about this implementation is the
+  # NOTE: The thing that bothers me the most about this implementation is the
   # cleanup and how it may (possibly?) effect performance. I need to do some
   # benchmarks to test if this effects `:ets.update_counter/4` at all.
   defp cleanup(cutoff) do
