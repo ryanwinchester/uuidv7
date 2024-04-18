@@ -7,11 +7,24 @@
 
 UUIDv7 for Elixir and (optionally) Ecto, using an 18-bit randomly-seeded counter.
 
-There are other UUID v7 packages, but I wanted the additional precision.
-
-Uses suggestions described in **[Section 6.2](https://www.ietf.org/archive/id/draft-ietf-uuidrev-rfc4122bis-14.html#name-monotonicity-and-counters)**
-from [this IETF Draft](https://www.ietf.org/archive/id/draft-ietf-uuidrev-rfc4122bis-14.html)
+Uses suggestions described in **[Section 6.2](https://www.ietf.org/archive/id/draft-ietf-uuidrev-rfc4122bis-14.html#name-monotonicity-and-counters)** from [this IETF Draft](https://www.ietf.org/archive/id/draft-ietf-uuidrev-rfc4122bis-14.html)
 to add additional sort precision to a version 7 UUID.
+
+## When should I use this package?
+
+- You want sequential, time-based, ordered IDs (per-node).
+- You are willing to trade a small amount of raw performance for these
+  guarantees. You are taking a hit for backwards time-leap protection and the
+  counter with rollover protection.
+
+## When should I not use this package?
+
+- You don't care about sort/order precision beyond milliseconds.
+
+There are other UUID packages, that only have millisecond precision, for example:
+
+- [martinthenth/uuidv7](https://github.com/martinthenth/uuidv7)
+- [bitwalker/uniq](https://github.com/bitwalker/uniq)
 
 ## Installation
 
