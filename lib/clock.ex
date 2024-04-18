@@ -7,7 +7,7 @@ defmodule UUIDv7.Clock do
   @type counter :: <<_::18>>
   @type counter_seed :: <<_::17>>
 
-  @default_cleanup_interval_ms :timer.seconds(60)
+  @default_cleanup_interval_ms :timer.seconds(2)
   @default_cleanup_tick_cutoff 2
 
   # The threshold is the number before the counter will roll over.
@@ -96,6 +96,12 @@ defmodule UUIDv7.Clock do
     ])
   end
 
+  # The best option I can find to have a counter that resets for every
+  # millisecond tick is to use the millisecond timestamp as the keys for
+  # en `ets` table and use `update_counter`. It avoids having to use a
+  # GenServer or have an ever-increasing monotonic integer that doesn't reset
+  # and introduces the chance of rollover which would break sort order every
+  # time this occurs.
   defp update_counter(ts, seed) do
     :ets.update_counter(__MODULE__, ts, 1, {ts, seed})
   end
@@ -104,6 +110,9 @@ defmodule UUIDv7.Clock do
     Process.send_after(self(), :cleanup, interval_ms)
   end
 
+  # The thing that bothers me the most about this implementation is the
+  # cleanup and how it may (possibly?) effect performance. I need to do some
+  # benchmarks to test if this effects `:ets.update_counter/4` at all.
   defp cleanup(cutoff) do
     timestamp = System.system_time(:millisecond) - cutoff
     :ets.select_delete(__MODULE__, [{{:"$1", :_}, [{:<, :"$1", timestamp}], [true]}])
