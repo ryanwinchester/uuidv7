@@ -7,7 +7,7 @@ defmodule UUIDv7.Clock do
   @type counter :: <<_::18>>
   @type counter_seed :: <<_::17>>
 
-  @default_cleanup_interval_ms 60 * 1000
+  @default_cleanup_interval_ms :timer.seconds(60)
   @default_cleanup_tick_cutoff 2
 
   # The threshold is the number before the counter will roll over.
@@ -36,11 +36,12 @@ defmodule UUIDv7.Clock do
   Get a unix millisecond timestamp and a clock sequence that fits in 18 bits.
   """
   @spec next(counter_seed()) :: {timestamp(), counter()}
-  def next(<<seed::big-unsigned-17>>) do
+  def next(<<seed::17>>) do
     current_ts = System.system_time(:millisecond)
 
     clock =
       with @threshold <- update_counter(current_ts, seed) do
+        # Rollover protection.
         update_counter(current_ts + 1, seed)
       end
 
