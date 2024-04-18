@@ -33,7 +33,7 @@ The package can be installed by adding `uuid_v7` to your list of dependencies in
 ```elixir
 def deps do
   [
-    {:uuid_v7, "~> 0.4.1"}
+    {:uuid_v7, "~> 0.4.2"}
   ]
 end
 ```

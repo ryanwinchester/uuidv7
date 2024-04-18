@@ -50,8 +50,9 @@ defmodule UUIDv7.Clock do
     # by 1 millisecond instead to preserve order.
     clock =
       with @threshold <- update_counter(current_ts, seed) do
-        update_counter(current_ts + 1, seed)
-        :atomics.put(timestamp_ref, 1, current_ts + 1)
+        next_ts = current_ts + 1
+        :atomics.put(timestamp_ref, 1, next_ts)
+        update_counter(next_ts, seed)
       end
 
     {current_ts, <<clock::big-unsigned-18>>}
