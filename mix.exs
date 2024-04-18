@@ -1,7 +1,7 @@
 defmodule UUIDv7.MixProject do
   use Mix.Project
 
-  @version "0.3.1"
+  @version "0.4.0"
 
   @repo_url "https://github.com/ryanwinchester/uuidv7"
 
@@ -41,8 +41,8 @@ defmodule UUIDv7.MixProject do
 
   defp description do
     """
-    UUID v7 with additional clock precision using microseconds.
-    Uses Section 6.2, Method 3 from the IETF Draft.
+    UUID v7 with an 18-bit randomly-seeded counter.
+    (Re: Section 6.2, from the IETF Draft.)
     """
   end
 
