@@ -19,7 +19,7 @@ defmodule UUIDv7.TimeLeapTest do
       |> DateTime.add(1, :hour)
       |> DateTime.to_unix(:millisecond)
 
-    :persistent_term.get(:timestamp_ref) |> :atomics.put(1, future_timestamp)
+    :persistent_term.get(Clock) |> :atomics.put(1, future_timestamp)
 
     <<rand_a::17, _::7>> = :crypto.strong_rand_bytes(3)
     {time3, _clock} = Clock.next(<<rand_a::17>>)
