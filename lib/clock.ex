@@ -45,10 +45,13 @@ defmodule UUIDv7.Clock do
 
     :atomics.put(timestamp_ref, 1, current_ts)
 
+    # Rollover protection.
+    # If the counter is over the allotted bits, then we update the timestamp
+    # by 1 millisecond instead to preserve order.
     clock =
       with @threshold <- update_counter(current_ts, seed) do
-        # Rollover protection.
         update_counter(current_ts + 1, seed)
+        :atomics.put(timestamp_ref, 1, current_ts + 1)
       end
 
     {current_ts, <<clock::big-unsigned-18>>}
