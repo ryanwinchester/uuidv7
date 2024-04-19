@@ -33,6 +33,7 @@ defmodule UUIDv7.MixProject do
   defp deps do
     [
       {:ecto, "~> 3.0", optional: true},
+      {:uniq, "~> 0.1", only: [:bench], runtime: false},
       {:benchee, "~> 1.0", only: [:bench], runtime: false},
       {:ex_doc, "~> 0.31", only: [:dev], runtime: false},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
