@@ -71,3 +71,39 @@ defmodule MyApp.Blog.Post do
   end
 end
 ```
+
+## Benchmarks
+
+Run benchmarks with
+
+```
+MIX_ENV=bench mix run bench/filename.exs
+```
+
+Where `filename.exs` is the name of one of the benchmark files in the `bench` directory.
+
+### Compared to `Uniq.UUID`:
+
+#### String:
+
+```
+Name                     ips        average  deviation         median         99th %
+uniq v7 string        2.23 M      448.71 ns  ±3082.24%         417 ns         583 ns
+uuid_v7 string        2.08 M      480.89 ns  ±3868.08%         417 ns         625 ns
+
+Comparison:
+uniq v7 string        2.23 M
+uuid_v7 string        2.08 M - 1.07x slower +32.18 ns
+```
+
+#### Raw (binary):
+
+```
+Name                  ips        average  deviation         median         99th %
+uniq v7 raw        3.35 M      298.15 ns  ±7140.23%         250 ns         375 ns
+uuid_v7 raw        2.71 M      368.53 ns  ±4920.92%         333 ns         459 ns
+
+Comparison:
+uniq v7 raw        3.35 M
+uuid_v7 raw        2.71 M - 1.24x slower +70.37 ns
+```
