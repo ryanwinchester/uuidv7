@@ -52,7 +52,8 @@ defmodule UUIDv7.Clock do
 
     # Rollover protection.
     # If the counter is over the allotted bits, then we update the timestamp
-    # by 1 millisecond to preserve order, which will also reset the counter.
+    # by 1 millisecond to preserve order, which will also reset the counter
+    # using the provided seed value.
     clock =
       with @max_counter <- update_counter(current_ts, seed) do
         next_ts = current_ts + 1
