@@ -1,7 +1,7 @@
 defmodule UUIDv7.MixProject do
   use Mix.Project
 
-  @version "0.4.2"
+  @version "0.4.3"
 
   @repo_url "https://github.com/ryanwinchester/uuidv7"
 
@@ -33,7 +33,8 @@ defmodule UUIDv7.MixProject do
   defp deps do
     [
       {:ecto, "~> 3.0", optional: true},
-      {:ex_doc, "~> 0.31", only: :dev, runtime: false},
+      {:benchee, "~> 1.0", only: [:bench], runtime: false},
+      {:ex_doc, "~> 0.31", only: [:dev], runtime: false},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false}
     ]

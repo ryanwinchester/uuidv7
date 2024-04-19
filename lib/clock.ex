@@ -6,12 +6,12 @@ defmodule UUIDv7.Clock do
   @type counter :: <<_::18>>
   @type counter_seed :: <<_::17>>
 
+  @default_table_opts [:named_table, :public, :set]
   @default_cleanup_interval_ms :timer.seconds(2)
   @default_cleanup_tick_cutoff 2
 
-  # The threshold is the number before the counter will roll over.
-  # It is `2 ** (number of bits) - 1`.
-  @threshold 2 ** 18 - 1
+  # The threshold number where the counter will roll over.
+  @max_counter 2 ** 18
 
   @compile {:inline, [update_counter: 2]}
 
@@ -28,7 +28,12 @@ defmodule UUIDv7.Clock do
   """
   @spec start_link(keyword()) :: GenServer.on_start()
   def start_link(opts) do
-    GenServer.start_link(__MODULE__, opts)
+    if Keyword.get(opts, :start?, true) do
+      name = Keyword.get(opts, :name) || __MODULE__
+      GenServer.start_link(__MODULE__, opts, name: name)
+    else
+      :ignore
+    end
   end
 
   @doc """
@@ -47,9 +52,9 @@ defmodule UUIDv7.Clock do
 
     # Rollover protection.
     # If the counter is over the allotted bits, then we update the timestamp
-    # by 1 millisecond instead to preserve order.
+    # by 1 millisecond to preserve order, which will also reset the counter.
     clock =
-      with @threshold <- update_counter(current_ts, seed) do
+      with @max_counter <- update_counter(current_ts, seed) do
         next_ts = current_ts + 1
         :atomics.put(timestamp_ref, 1, next_ts)
         update_counter(next_ts, seed)
@@ -66,9 +71,10 @@ defmodule UUIDv7.Clock do
   def init(opts) do
     interval_ms = Keyword.get(opts, :cleanup_interval, @default_cleanup_interval_ms)
     cleanup_tick_cutoff = Keyword.get(opts, :cleanup_tick_cutoff, @default_cleanup_tick_cutoff)
+    ets_opts = Keyword.get(opts, :table, @default_table_opts)
 
     state = %{
-      table: create_table(),
+      table: :ets.new(__MODULE__, ets_opts),
       interval_ms: interval_ms,
       cleanup_tick_cutoff: cleanup_tick_cutoff
     }
@@ -86,18 +92,8 @@ defmodule UUIDv7.Clock do
   end
 
   # ----------------------------------------------------------------------------
-  # Private API
+  # Manage ETS table.
   # ----------------------------------------------------------------------------
-
-  defp create_table do
-    :ets.new(__MODULE__, [
-      :named_table,
-      :public,
-      :set,
-      {:read_concurrency, true},
-      {:write_concurrency, true}
-    ])
-  end
 
   # The current best solution for having a counter that resets for every
   # millisecond tick is to use the millisecond timestamp as the keys for

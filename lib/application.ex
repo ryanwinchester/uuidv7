@@ -10,7 +10,7 @@ defmodule UUIDv7.Application do
     :persistent_term.put(UUIDv7.Clock, clock_atomics_ref)
 
     children = [
-      UUIDv7.Clock
+      {UUIDv7.Clock, Application.get_env(:uuid_v7, UUIDv7.Clock, [])}
     ]
 
     opts = [strategy: :one_for_one, name: UUIDv7.Supervisor]
