@@ -14,8 +14,13 @@ to add additional sort precision to a version 7 UUID.
 
 - You want sequential, time-based, ordered IDs (per-node).
 - You are willing to trade a small amount of raw performance for these
-  guarantees. You are taking a hit for backwards time-leap protection and the
-  counter with rollover protection.
+  guarantees. You are taking a hit for the counter with rollover protection,
+  and backwards time-leap protection.
+
+NOTE: In this library, sequential UUIDs and ordering are more important than time precision and performance.
+We take a slight hit in both of those areas to ensure that the UUIDs are in order. For example, in the case of a
+backwards time leap, we continue with the previously used timestamp, and in the case of rollover, we increment
+the timestamp by one to ensure that the ordering is maintained.
 
 ## When should I not use this package?
 
