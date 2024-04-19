@@ -82,7 +82,8 @@ MIX_ENV=bench mix run bench/filename.exs
 
 Where `filename.exs` is the name of one of the benchmark files in the `bench` directory.
 
-### Compared to `Uniq.UUID`:
+### Compared to `Uniq.UUID`
+(which has no counter or time-leap protection. millisecond precision.)
 
 #### String:
 
