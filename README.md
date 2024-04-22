@@ -1,9 +1,9 @@
 # UUIDv7
 
 [![CI](https://github.com/ryanwinchester/uuidv7/actions/workflows/ci.yml/badge.svg)](https://github.com/ryanwinchester/uuidv7/actions/workflows/ci.yml)
- [![Hex.pm](https://img.shields.io/hexpm/v/uuid_v7)](https://hex.pm/packages/uuid_v7)
- [![Hex.pm](https://img.shields.io/hexpm/dt/uuid_v7)](https://hex.pm/packages/uuid_v7)
- [![Hex.pm](https://img.shields.io/hexpm/l/uuid_v7)](https://github.com/ryanwinchester/uuidv7/blob/main/LICENSE)
+[![Hex.pm](https://img.shields.io/hexpm/v/uuid_v7)](https://hex.pm/packages/uuid_v7)
+[![Hex.pm](https://img.shields.io/hexpm/dt/uuid_v7)](https://hex.pm/packages/uuid_v7)
+[![Hex.pm](https://img.shields.io/hexpm/l/uuid_v7)](https://github.com/ryanwinchester/uuidv7/blob/main/LICENSE)
 
 UUIDv7 for Elixir and (optionally) Ecto, using an 18-bit randomly-seeded counter.
 
@@ -72,6 +72,15 @@ defmodule MyApp.Blog.Post do
 end
 ```
 
+To use UUIDs for everything in your migrations, it's easiest to just add that as the
+default type in your `config.exs`. e.g.:
+
+```elixir
+config :app, App.Repo,
+  migration_primary_key: [type: :binary_id],
+  migration_foreign_key: [type: :binary_id]
+```
+
 ## Benchmarks
 
 Run benchmarks with
@@ -83,6 +92,7 @@ MIX_ENV=bench mix run bench/filename.exs
 Where `filename.exs` is the name of one of the benchmark files in the `bench` directory.
 
 ### Compared to `Uniq.UUID`
+
 (which has no counter or time-leap protection. millisecond precision.)
 
 #### String:

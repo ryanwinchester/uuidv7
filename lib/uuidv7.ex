@@ -29,6 +29,9 @@ defmodule UUIDv7 do
   """
   @type raw :: <<_::128>>
 
+  @version 7
+  @variant 2
+
   @doc """
   Generates a version 7 UUID using submilliseconds for increased clock precision.
 
@@ -51,14 +54,23 @@ defmodule UUIDv7 do
 
   """
   def bingenerate do
+    # Generate the random seed for the counter, and `rand_b` for the UUID at
+    # the same time. This minimizes the number of random bytes needed.
     <<rand_a::17, _::1, rand_b::38>> = :crypto.strong_rand_bytes(7)
 
-    {time, clock} = Clock.next(<<rand_a::17>>)
+    {time_ms, clock} = Clock.next(<<rand_a::17>>)
 
+    # Split up the counter to fit into the UUIDv7 format.
     <<clock_a::big-unsigned-12, clock_b::big-unsigned-6>> = clock
 
-    <<time::big-unsigned-48, 7::4, clock_a::big-unsigned-12, 2::2, clock_b::big-unsigned-6,
-      rand_b::56>>
+    <<
+      time_ms::big-unsigned-48,
+      @version::4,
+      clock_a::big-unsigned-12,
+      @variant::2,
+      clock_b::big-unsigned-6,
+      rand_b::56
+    >>
   end
 
   @doc """
@@ -71,12 +83,12 @@ defmodule UUIDv7 do
 
   """
   @spec extract_timestamp(t | raw) :: integer
-  def extract_timestamp(<<_::288>> = uuid) do
-    decode(uuid) |> extract_timestamp()
+  def extract_timestamp(<<timestamp_ms::big-unsigned-48, @version::4, _::76>>) do
+    timestamp_ms
   end
 
-  def extract_timestamp(<<ms::big-unsigned-48, 7::4, _::76>>) do
-    ms
+  def extract_timestamp(<<_::288>> = uuid) do
+    decode(uuid) |> extract_timestamp()
   end
 
   @doc """
