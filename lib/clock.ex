@@ -101,7 +101,7 @@ defmodule UUIDv7.Clock do
   # en `ets` table and use `update_counter`. It avoids having to use a
   # GenServer for state, or have an ever-increasing monotonic integer that
   # doesn't reset and introduces the chance of rollover (which would break sort
-  # order every time this occurs). Any better ideas? Submit an issue.
+  # order every time this occurs).
   defp update_counter(ts, seed) do
     :ets.update_counter(__MODULE__, ts, 1, {ts, seed})
   end
