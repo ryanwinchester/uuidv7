@@ -77,6 +77,7 @@ defmodule UUIDv7.Clock do
     state = %{
       table: :ets.new(__MODULE__, ets_opts),
       interval_ms: interval_ms,
+      timestamp_ref: :persistent_term.get(__MODULE__),
       cleanup_tick_cutoff: cleanup_tick_cutoff
     }
 
@@ -87,7 +88,7 @@ defmodule UUIDv7.Clock do
 
   @impl GenServer
   def handle_info(:cleanup, state) do
-    cleanup(state.cleanup_tick_cutoff)
+    cleanup(state.timestamp_ref, state.cleanup_tick_cutoff)
     schedule_cleanup(state.interval_ms)
     {:noreply, state}
   end
@@ -106,12 +107,16 @@ defmodule UUIDv7.Clock do
     :ets.update_counter(__MODULE__, ts, 1, {ts, seed})
   end
 
-  # NOTE: The thing that bothers me the most about this implementation is the
-  # cleanup and how it may (possibly?) effect performance. I need to do some
-  # benchmarks to test if this effects `:ets.update_counter/4` at all.
-  defp cleanup(cutoff) do
-    timestamp = System.system_time(:millisecond) - cutoff
-    :ets.select_delete(__MODULE__, [{{:"$1", :_}, [{:<, :"$1", timestamp}], [true]}])
+  # NOTE: I still want to benchmark different cutoffs and cleanup intervals.
+  defp cleanup(timestamp_ref, cutoff) do
+    timestamp = System.system_time(:millisecond)
+    previous_ts = :atomics.get(timestamp_ref, 1)
+
+    # If the last timestamp was over 10 seconds ago, then we don't bother to run the cleanup.
+    if timestamp - previous_ts < 10_000 do
+      # Cleanup all entries that are older than the cutoff.
+      :ets.select_delete(__MODULE__, [{{:"$1", :_}, [{:<, :"$1", timestamp - cutoff}], [true]}])
+    end
   end
 
   defp schedule_cleanup(interval_ms) do
