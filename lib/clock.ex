@@ -16,27 +16,6 @@ defmodule UUIDv7.Clock do
   @compile {:inline, [update_counter: 2]}
 
   @doc """
-  Starts the Clock server.
-
-  ### Options
-
-   * `:cleanup_interval` - The interval in milliseconds that the table cleanup
-     task is run. Defaults to `#{@default_cleanup_interval_ms}`.
-   * `:cleanup_tick_cutoff` - The number of timestamp ticks ago that the table
-     is pruned to. Defaults to `#{@default_cleanup_tick_cutoff}`.
-
-  """
-  @spec start_link(keyword()) :: GenServer.on_start()
-  def start_link(opts) do
-    if Keyword.get(opts, :start?, true) do
-      name = Keyword.get(opts, :name) || __MODULE__
-      GenServer.start_link(__MODULE__, opts, name: name)
-    else
-      :ignore
-    end
-  end
-
-  @doc """
   Get a unix millisecond timestamp and a clock sequence that fits in 18 bits.
   """
   @spec next(counter_seed()) :: {timestamp(), counter()}
@@ -62,6 +41,30 @@ defmodule UUIDv7.Clock do
       end
 
     {current_ts, <<clock::big-unsigned-18>>}
+  end
+
+  @doc """
+  Starts the Clock server.
+
+  The GenServer part of this module is used for managing the ETS table and not
+  for generating UUIDs.
+
+  ### Options
+
+   * `:cleanup_interval` - The interval in milliseconds that the table cleanup
+     task is run. Defaults to `#{@default_cleanup_interval_ms}`.
+   * `:cleanup_tick_cutoff` - The number of timestamp ticks ago that the table
+     is pruned to. Defaults to `#{@default_cleanup_tick_cutoff}`.
+
+  """
+  @spec start_link(keyword()) :: GenServer.on_start()
+  def start_link(opts) do
+    if Keyword.get(opts, :start?, true) do
+      name = Keyword.get(opts, :name) || __MODULE__
+      GenServer.start_link(__MODULE__, opts, name: name)
+    else
+      :ignore
+    end
   end
 
   # ----------------------------------------------------------------------------
