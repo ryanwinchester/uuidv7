@@ -1,7 +1,7 @@
 defmodule UUIDv7.MixProject do
   use Mix.Project
 
-  @version "0.4.4"
+  @version "0.5.0"
 
   @repo_url "https://github.com/ryanwinchester/uuidv7"
 

@@ -38,7 +38,7 @@ The package can be installed by adding `uuid_v7` to your list of dependencies in
 ```elixir
 def deps do
   [
-    {:uuid_v7, "~> 0.4.4"}
+    {:uuid_v7, "~> 0.5.0"}
   ]
 end
 ```
@@ -61,9 +61,9 @@ Use this the same way you would use `Ecto.UUID`. For example:
 defmodule MyApp.Blog.Post do
   use Ecto.Schema
 
-  @primary_key {:id, UUIDv7, autogenerate: true}
+  @primary_key {:id, UUIDv7.Type, autogenerate: true}
 
-  @foreign_key_type UUIDv7
+  @foreign_key_type UUIDv7.Type
 
   schema "blog_posts" do
     field :text, :string
