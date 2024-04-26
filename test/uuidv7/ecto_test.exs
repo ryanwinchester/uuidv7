@@ -9,53 +9,56 @@ defmodule UUIDv7.EctoTest do
   @test_uuid_binary <<1, 142, 144, 216, 6, 232, 127, 159, 191, 215, 103, 48, 186, 152, 165, 27>>
 
   test "cast" do
-    assert UUIDv7.cast(@test_uuid) == {:ok, @test_uuid}
-    assert UUIDv7.cast(@test_uuid_binary) == {:ok, @test_uuid}
-    assert UUIDv7.cast(@test_uuid_upper_case) == {:ok, String.downcase(@test_uuid_upper_case)}
-    assert UUIDv7.cast(@test_uuid_invalid_characters) == :error
-    assert UUIDv7.cast(@test_uuid_null) == {:ok, @test_uuid_null}
-    assert UUIDv7.cast(nil) == :error
+    assert UUIDv7.Type.cast(@test_uuid) == {:ok, @test_uuid}
+    assert UUIDv7.Type.cast(@test_uuid_binary) == {:ok, @test_uuid}
+
+    assert UUIDv7.Type.cast(@test_uuid_upper_case) ==
+             {:ok, String.downcase(@test_uuid_upper_case)}
+
+    assert UUIDv7.Type.cast(@test_uuid_invalid_characters) == :error
+    assert UUIDv7.Type.cast(@test_uuid_null) == {:ok, @test_uuid_null}
+    assert UUIDv7.Type.cast(nil) == :error
   end
 
   test "cast!" do
-    assert UUIDv7.cast!(@test_uuid) == @test_uuid
+    assert UUIDv7.Type.cast!(@test_uuid) == @test_uuid
 
-    assert_raise Ecto.CastError, "cannot cast nil to UUIDv7", fn ->
-      assert UUIDv7.cast!(nil)
+    assert_raise Ecto.CastError, "cannot cast nil to UUIDv7.Type", fn ->
+      assert UUIDv7.Type.cast!(nil)
     end
   end
 
   test "load" do
-    assert UUIDv7.load(@test_uuid_binary) == {:ok, @test_uuid}
-    assert UUIDv7.load("") == :error
+    assert UUIDv7.Type.load(@test_uuid_binary) == {:ok, @test_uuid}
+    assert UUIDv7.Type.load("") == :error
 
     assert_raise ArgumentError, ~r"trying to load string UUID as UUID:", fn ->
-      UUIDv7.load(@test_uuid)
+      UUIDv7.Type.load(@test_uuid)
     end
   end
 
   test "load!" do
-    assert UUIDv7.load!(@test_uuid_binary) == @test_uuid
+    assert UUIDv7.Type.load!(@test_uuid_binary) == @test_uuid
 
     assert_raise ArgumentError, ~r"cannot load given binary as UUID:", fn ->
-      UUIDv7.load!(@test_uuid_invalid_format)
+      UUIDv7.Type.load!(@test_uuid_invalid_format)
     end
   end
 
   test "dump" do
-    assert UUIDv7.dump(@test_uuid) == {:ok, @test_uuid_binary}
-    assert UUIDv7.dump(@test_uuid_binary) == :error
+    assert UUIDv7.Type.dump(@test_uuid) == {:ok, @test_uuid_binary}
+    assert UUIDv7.Type.dump(@test_uuid_binary) == :error
   end
 
   test "dump!" do
-    assert UUIDv7.dump!(@test_uuid) == @test_uuid_binary
+    assert UUIDv7.Type.dump!(@test_uuid) == @test_uuid_binary
 
     assert_raise ArgumentError, ~r"cannot dump given UUID to binary:", fn ->
-      UUIDv7.dump!(@test_uuid_binary)
+      UUIDv7.Type.dump!(@test_uuid_binary)
     end
 
     assert_raise ArgumentError, ~r"cannot dump given UUID to binary:", fn ->
-      UUIDv7.dump!(@test_uuid_invalid_characters)
+      UUIDv7.Type.dump!(@test_uuid_invalid_characters)
     end
   end
 
