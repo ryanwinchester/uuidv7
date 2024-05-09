@@ -31,7 +31,7 @@ There are other UUID packages, that only have millisecond precision, for example
 - [martinthenth/uuidv7](https://github.com/martinthenth/uuidv7)
 - [bitwalker/uniq](https://github.com/bitwalker/uniq)
 
-## Installation + Setup
+## Installation
 
 The package can be installed by adding `uuid_v7` to your list of dependencies in `mix.exs`:
 
