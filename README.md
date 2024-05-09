@@ -31,7 +31,7 @@ There are other UUID packages, that only have millisecond precision, for example
 - [martinthenth/uuidv7](https://github.com/martinthenth/uuidv7)
 - [bitwalker/uniq](https://github.com/bitwalker/uniq)
 
-## Installation
+## Installation + Setup
 
 The package can be installed by adding `uuid_v7` to your list of dependencies in `mix.exs`:
 
@@ -73,12 +73,22 @@ end
 ```
 
 To use UUIDs for everything in your migrations, it's easiest to just add that as the
-default type in your `config.exs`. e.g.:
+default type in your config. e.g.:
 
 ```elixir
+# config/config.exs
 config :app, App.Repo,
   migration_primary_key: [type: :binary_id],
   migration_foreign_key: [type: :binary_id]
+```
+
+If you need to generate UUIDs in migrations (e.g. inserting or seeding data),
+then also add this to your Repo config as well:
+
+```elixir
+# config/config.exs
+config :app, App.Repo,
+  start_apps_before_migration: [:uuid_v7]
 ```
 
 ## Benchmarks
