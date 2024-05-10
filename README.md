@@ -7,7 +7,7 @@
 
 UUIDv7 for Elixir and (optionally) Ecto, using an 18-bit randomly-seeded counter.
 
-Uses suggestions described in **[Section 6.2](https://www.ietf.org/archive/id/draft-ietf-uuidrev-rfc4122bis-14.html#name-monotonicity-and-counters)** from [this IETF Draft](https://www.ietf.org/archive/id/draft-ietf-uuidrev-rfc4122bis-14.html)
+Uses suggestions described in **[Section 6.2](https://www.rfc-editor.org/rfc/rfc9562#name-monotonicity-and-counters)** from [RFC 9562](https://www.rfc-editor.org/rfc/rfc9562)
 to add additional sort precision to a version 7 UUID.
 
 ## When should I use this package?
