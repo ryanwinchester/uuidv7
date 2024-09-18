@@ -3,6 +3,12 @@ alias UUIDv7.Clock
 {:ok, _pid} = Clock.start_link([])
 
 Benchee.run(%{
+  "uuuid_v7 raw" => fn ->
+    UUUIDv7.bingenerate()
+  end,
+  "uuuid_v7 string" => fn ->
+    UUUIDv7.generate()
+  end,
   "uuid_v7 raw" => fn ->
     UUIDv7.bingenerate()
   end,
