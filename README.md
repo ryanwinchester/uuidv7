@@ -5,7 +5,7 @@
 [![Hex.pm](https://img.shields.io/hexpm/dt/uuid_v7)](https://hex.pm/packages/uuid_v7)
 [![Hex.pm](https://img.shields.io/hexpm/l/uuid_v7)](https://github.com/ryanwinchester/uuidv7/blob/main/LICENSE)
 
-UUIDv7 for Elixir and (optionally) Ecto, using an 18-bit randomly-seeded counter.
+UUIDv7 for Elixir and (optionally) Ecto, using always-increasing clock-precision for monotonicity.
 
 Uses suggestions described in **[Section 6.2](https://www.rfc-editor.org/rfc/rfc9562#name-monotonicity-and-counters)** from [RFC 9562](https://www.rfc-editor.org/rfc/rfc9562)
 to add additional sort precision to a version 7 UUID.
@@ -14,13 +14,12 @@ to add additional sort precision to a version 7 UUID.
 
 - You want sequential, time-based, ordered IDs (per-node).
 - You are willing to trade a small amount of raw performance for these
-  guarantees. You are taking a hit for the counter with rollover protection,
-  and backwards time-leap protection.
+  guarantees.
 
 NOTE: In this library, sequential UUIDs and ordering are more important than time precision and performance.
 We take a slight hit in both of those areas to ensure that the UUIDs are in order. For example, in the case of a
-backwards time leap, we continue with the previously used timestamp, and in the case of rollover, we increment
-the timestamp by one to ensure that the ordering is maintained.
+backwards time leap, or even concurrent requests at the same time, we continue with the previously used
+timestamp and increment the clock precision by a minimum step.
 
 ## When should I not use this package?
 
@@ -38,7 +37,7 @@ The package can be installed by adding `uuid_v7` to your list of dependencies in
 ```elixir
 def deps do
   [
-    {:uuid_v7, "~> 0.5.0"}
+    {:uuid_v7, "~> 0.6.0"}
   ]
 end
 ```
@@ -103,28 +102,28 @@ Where `filename.exs` is the name of one of the benchmark files in the `bench` di
 
 ### Compared to `Uniq.UUID`
 
-(which has no counter or time-leap protection. millisecond precision.)
+(which has no extra clock precision, only millisecond precision.)
 
 #### String:
 
 ```
 Name                     ips        average  deviation         median         99th %
-uniq v7 string        2.23 M      448.71 ns  ±3082.24%         417 ns         583 ns
-uuid_v7 string        2.08 M      480.89 ns  ±3868.08%         417 ns         625 ns
+uniq v7 string        2.13 M      468.64 ns  ±4155.60%         417 ns         584 ns
+uuid_v7 string        1.98 M      504.57 ns  ±3338.92%         458 ns         667 ns
 
 Comparison:
-uniq v7 string        2.23 M
-uuid_v7 string        2.08 M - 1.07x slower +32.18 ns
+uniq v7 string        2.13 M
+uuid_v7 string        1.98 M - 1.08x slower +35.93 ns
 ```
 
 #### Raw (binary):
 
 ```
 Name                  ips        average  deviation         median         99th %
-uniq v7 raw        3.35 M      298.15 ns  ±7140.23%         250 ns         375 ns
-uuid_v7 raw        2.71 M      368.53 ns  ±4920.92%         333 ns         459 ns
+uniq v7 raw        3.14 M      318.58 ns  ±8234.89%         250 ns         417 ns
+uuid_v7 raw        2.85 M      351.26 ns  ±4999.60%         292 ns         459 ns
 
 Comparison:
-uniq v7 raw        3.35 M
-uuid_v7 raw        2.71 M - 1.24x slower +70.37 ns
+uniq v7 raw        3.14 M
+uuid_v7 raw        2.85 M - 1.10x slower +32.69 ns
 ```

@@ -32,8 +32,6 @@ defmodule UUIDv7 do
   @version 7
   @variant 2
 
-  @ns_per_ms 1_000_000
-
   # For macOS (Darwin) or Windows use 10 bits.
   # Otherwise, use 12 bits (e.g. on Linux).
   sub_ms_bits =
@@ -44,7 +42,12 @@ defmodule UUIDv7 do
     end
 
   @sub_ms_bits sub_ms_bits
-  @rand_a_size 12 - sub_ms_bits
+
+  # On systems that only have 10 bits of increased clock precision (instead of 12),
+  # we will use the extra 2 bits for randomness, to contribute to uniqueness.
+  @rand_a_size 12 - @sub_ms_bits
+
+  @ns_per_ms 1_000_000
 
   @doc """
   Generates a version 7 UUID using submilliseconds for increased clock precision.
