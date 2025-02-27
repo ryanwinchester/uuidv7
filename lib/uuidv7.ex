@@ -32,6 +32,20 @@ defmodule UUIDv7 do
   @version 7
   @variant 2
 
+  @ns_per_ms 1_000_000
+
+  # For macOS (Darwin) or Windows use 10 bits.
+  # Otherwise, use 12 bits (e.g. on Linux).
+  sub_ms_bits =
+    case :os.type() do
+      {:unix, :darwin} -> 10
+      {:win32, _} -> 10
+      {_, _} -> 12
+    end
+
+  @sub_ms_bits sub_ms_bits
+  @rand_a_size 12 - sub_ms_bits
+
   @doc """
   Generates a version 7 UUID using submilliseconds for increased clock precision.
 
@@ -54,22 +68,21 @@ defmodule UUIDv7 do
 
   """
   def bingenerate do
-    # Generate the random seed for the counter, and `rand_b` for the UUID at
-    # the same time. This minimizes the number of random bytes needed.
-    <<rand_a::17, _::1, rand_b::38>> = :crypto.strong_rand_bytes(7)
+    time_ns = Clock.next_ascending()
 
-    {time_ms, clock} = Clock.next(<<rand_a::17>>)
+    time_ms = div(time_ns, @ns_per_ms)
 
-    # Split up the counter to fit into the UUIDv7 format.
-    <<clock_a::big-unsigned-12, clock_b::big-unsigned-6>> = clock
+    clock_precision = (rem(time_ns, @ns_per_ms) * Bitwise.bsl(1, @sub_ms_bits)) |> div(@ns_per_ms)
+
+    <<rand_a::2, rand_b::62>> = :crypto.strong_rand_bytes(8)
 
     <<
       time_ms::big-unsigned-48,
-      @version::4,
-      clock_a::big-unsigned-12,
-      @variant::2,
-      clock_b::big-unsigned-6,
-      rand_b::56
+      @version::big-unsigned-4,
+      clock_precision::big-unsigned-@sub_ms_bits,
+      rand_a::@rand_a_size,
+      @variant::big-unsigned-2,
+      rand_b::62
     >>
   end
 
