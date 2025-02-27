@@ -81,10 +81,10 @@ defmodule UUIDv7 do
 
     <<
       time_ms::big-unsigned-48,
-      @version::big-unsigned-4,
+      @version::4,
       clock_precision::big-unsigned-@sub_ms_bits,
       rand_a::@rand_a_size,
-      @variant::big-unsigned-2,
+      @variant::2,
       rand_b::62
     >>
   end
