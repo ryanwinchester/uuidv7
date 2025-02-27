@@ -41,6 +41,8 @@ defmodule UUIDv7 do
   # people running their applications on Windows or macOS.
   @sub_ms_bits 12
 
+  @possible_values Bitwise.bsl(1, @sub_ms_bits)
+
   @doc """
   Generates a version 7 UUID using submilliseconds for increased clock precision.
 
@@ -64,10 +66,9 @@ defmodule UUIDv7 do
   """
   def bingenerate do
     time_ns = Clock.next_ascending()
-
     time_ms = div(time_ns, @ns_per_ms)
 
-    clock_precision = (rem(time_ns, @ns_per_ms) * Bitwise.bsl(1, @sub_ms_bits)) |> div(@ns_per_ms)
+    clock_precision = (rem(time_ns, @ns_per_ms) * @possible_values) |> div(@ns_per_ms)
 
     <<_rand_a::2, rand_b::62>> = :crypto.strong_rand_bytes(8)
 
