@@ -35,6 +35,12 @@ defmodule UUIDv7 do
 
   @ns_per_ms 1_000_000
 
+  # For macOS (Darwin) or Windows we would normally use 10 bits instead of 12.
+  # However, it would be an extra complexity and tradeoff of checking OS at
+  # runtime with some extra calcs, just for 2 bits of extra randomness for
+  # people running their applications on Windows or macOS.
+  @sub_ms_bits 12
+
   @doc """
   Generates a version 7 UUID using submilliseconds for increased clock precision.
 
@@ -57,32 +63,18 @@ defmodule UUIDv7 do
 
   """
   def bingenerate do
-    # For macOS (Darwin) or Windows use 10 bits.
-    # Otherwise, use 12 bits (e.g. on Linux).
-    sub_ms_bits =
-      case :os.type() do
-        {:unix, :darwin} -> 10
-        {:win32, _} -> 10
-        {_, _} -> 12
-      end
-
-    time_ns = Clock.next_ascending(sub_ms_bits)
+    time_ns = Clock.next_ascending()
 
     time_ms = div(time_ns, @ns_per_ms)
 
-    clock_precision = (rem(time_ns, @ns_per_ms) * Bitwise.bsl(1, sub_ms_bits)) |> div(@ns_per_ms)
+    clock_precision = (rem(time_ns, @ns_per_ms) * Bitwise.bsl(1, @sub_ms_bits)) |> div(@ns_per_ms)
 
-    <<rand_a::2, rand_b::62>> = :crypto.strong_rand_bytes(8)
-
-    # On systems that only have 10 bits of increased clock precision instead of 12,
-    # we will use the extra 2 bits for randomness, to contribute to uniqueness.
-    rand_a_size = 12 - sub_ms_bits
+    <<_rand_a::2, rand_b::62>> = :crypto.strong_rand_bytes(8)
 
     <<
       time_ms::big-unsigned-48,
       @version::4,
-      clock_precision::big-unsigned-size(sub_ms_bits),
-      rand_a::size(rand_a_size),
+      clock_precision::big-unsigned-@sub_ms_bits,
       @variant::2,
       rand_b::62
     >>

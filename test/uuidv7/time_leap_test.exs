@@ -1,35 +1,31 @@
 defmodule UUIDv7.TimeLeapTest do
-  use ExUnit.Case,
-    async: false,
-    parameterize: [
-      %{sub_ms_bits: 10},
-      %{sub_ms_bits: 12}
-    ]
+  use ExUnit.Case, async: false
 
   alias UUIDv7.Clock
 
-  test "next/1 protects against time leaping backwards", %{sub_ms_bits: sub_ms_bits} do
-    atomic_timer_ref = :persistent_term.get(Clock)
+  describe "next_ascending/0" do
+    test "protects against time leaping (always-ascending)" do
+      atomic_timer_ref = :persistent_term.get(Clock)
 
-    time1 = Clock.next_ascending(sub_ms_bits)
+      time1 = Clock.next_ascending()
 
-    :timer.sleep(1)
+      time2 = Clock.next_ascending()
 
-    time2 = Clock.next_ascending(sub_ms_bits)
+      future_timestamp =
+        DateTime.utc_now()
+        |> DateTime.add(1, :hour)
+        |> DateTime.to_unix(:nanosecond)
 
-    :timer.sleep(1)
+      :atomics.put(atomic_timer_ref, 1, future_timestamp)
 
-    future_timestamp =
-      DateTime.utc_now()
-      |> DateTime.add(1, :hour)
-      |> DateTime.to_unix(:nanosecond)
+      time3 = Clock.next_ascending()
 
-    :atomics.put(atomic_timer_ref, 1, future_timestamp)
+      time4 = Clock.next_ascending()
 
-    time3 = Clock.next_ascending(sub_ms_bits)
-
-    assert time1 < time2
-    assert time2 < time3
-    assert time3 > future_timestamp
+      assert time1 < time2
+      assert time2 < time3
+      assert time3 > future_timestamp
+      assert time3 < time4
+    end
   end
 end
