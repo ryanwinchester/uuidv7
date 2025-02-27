@@ -5,8 +5,6 @@ defmodule UUIDv7.TimeLeapTest do
 
   describe "next_ascending/0" do
     test "protects against time leaping (always-ascending)" do
-      atomic_timer_ref = :persistent_term.get(Clock)
-
       time1 = Clock.next_ascending()
 
       time2 = Clock.next_ascending()
@@ -16,7 +14,7 @@ defmodule UUIDv7.TimeLeapTest do
         |> DateTime.add(1, :hour)
         |> DateTime.to_unix(:nanosecond)
 
-      :atomics.put(atomic_timer_ref, 1, future_timestamp)
+      :persistent_term.get(Clock) |> :atomics.put(1, future_timestamp)
 
       time3 = Clock.next_ascending()
 
