@@ -3,6 +3,14 @@ defmodule UUIDv7.Clock do
 
   @ns_per_ms 1_000_000
 
+  # For macOS (Darwin) or Windows we would normally use 10 bits instead of 12.
+  # However, it would be an extra complexity and tradeoff of checking OS at
+  # runtime with some extra calcs, just for 2 bits of extra randomness for
+  # people running their applications on Windows or macOS.
+  @sub_ms_bits 12
+
+  @minimal_step_ns div(@ns_per_ms, Bitwise.bsl(1, @sub_ms_bits)) + 1
+
   @doc """
   Get an always-ascending unix nanosecond timestamp.
 
@@ -12,14 +20,12 @@ defmodule UUIDv7.Clock do
   We use `:atomics` to ensure this works with concurrent executions without race
   conditions.
   """
-  def next_ascending(sub_ms_bits) do
-    minimal_step_ns = div(@ns_per_ms, Bitwise.bsl(1, sub_ms_bits)) + 1
-
+  def next_ascending do
     # Get the atomics ref that we set in `UUIDv7.Application.start/2`.
     timestamp_ref = :persistent_term.get(__MODULE__)
 
     previous_ts = :atomics.get(timestamp_ref, 1)
-    min_step_ts = previous_ts + minimal_step_ns
+    min_step_ts = previous_ts + @minimal_step_ns
     current_ts = System.system_time(:nanosecond)
 
     # If the current timestamp is not at least the minimal step nanoseconds
@@ -31,10 +37,10 @@ defmodule UUIDv7.Clock do
         min_step_ts
       end
 
-    compare_exchange(timestamp_ref, previous_ts, new_ts, minimal_step_ns)
+    compare_exchange(timestamp_ref, previous_ts, new_ts)
   end
 
-  defp compare_exchange(timestamp_ref, previous_ts, new_ts, minimal_step_ns) do
+  defp compare_exchange(timestamp_ref, previous_ts, new_ts) do
     case :atomics.compare_exchange(timestamp_ref, 1, previous_ts, new_ts) do
       # If the new value was written, then we return it.
       :ok ->
@@ -43,7 +49,7 @@ defmodule UUIDv7.Clock do
       # If the atomic value has changed in the meantime, we add the minimal step
       # nanoseconds value to that and try again.
       updated_ts ->
-        compare_exchange(timestamp_ref, updated_ts, updated_ts + minimal_step_ns, minimal_step_ns)
+        compare_exchange(timestamp_ref, updated_ts, updated_ts + @minimal_step_ns)
     end
   end
 end
