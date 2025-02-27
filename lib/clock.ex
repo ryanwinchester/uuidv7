@@ -21,8 +21,13 @@ defmodule UUIDv7.Clock do
   conditions.
   """
   def next_ascending do
-    # Get the atomics ref that we set in `UUIDv7.Application.start/2`.
-    timestamp_ref = :persistent_term.get(__MODULE__)
+    # Get the atomic ref for the timestamp and initialize it if it doesn't exist yet.
+    timestamp_ref =
+      with nil <- :persistent_term.get(__MODULE__, nil) do
+        timestamp_ref = :atomics.new(1, signed: false)
+        :ok = :persistent_term.put(__MODULE__, timestamp_ref)
+        timestamp_ref
+      end
 
     previous_ts = :atomics.get(timestamp_ref, 1)
     min_step_ts = previous_ts + @minimal_step_ns

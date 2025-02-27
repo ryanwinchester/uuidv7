@@ -10,7 +10,6 @@ defmodule UUIDv7.MixProject do
       app: :uuid_v7,
       version: @version,
       elixir: "~> 1.16",
-      start_permanent: Mix.env() == :prod,
       deps: deps(),
       description: description(),
       package: package(),
@@ -24,8 +23,7 @@ defmodule UUIDv7.MixProject do
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
-      extra_applications: [:logger],
-      mod: {UUIDv7.Application, []}
+      extra_applications: [:logger]
     ]
   end
 
