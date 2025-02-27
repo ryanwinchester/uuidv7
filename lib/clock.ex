@@ -9,7 +9,10 @@ defmodule UUIDv7.Clock do
   # people running their applications on Windows or macOS.
   @sub_ms_bits 12
 
-  @minimal_step_ns div(@ns_per_ms, Bitwise.bsl(1, @sub_ms_bits)) + 1
+  # The count of possible values that fit in those bits (4096 or 2^12).
+  @possible_values Bitwise.bsl(1, @sub_ms_bits)
+
+  @minimal_step_ns div(@ns_per_ms, @possible_values) + 1
 
   @doc """
   Get an always-ascending unix nanosecond timestamp.
