@@ -30,22 +30,8 @@ defmodule UUIDv7 do
   @type raw :: <<_::128>>
 
   @version 7
+
   @variant 2
-
-  # For macOS (Darwin) or Windows use 10 bits.
-  # Otherwise, use 12 bits (e.g. on Linux).
-  sub_ms_bits =
-    case :os.type() do
-      {:unix, :darwin} -> 10
-      {:win32, _} -> 10
-      {_, _} -> 12
-    end
-
-  @sub_ms_bits sub_ms_bits
-
-  # On systems that only have 10 bits of increased clock precision (instead of 12),
-  # we will use the extra 2 bits for randomness, to contribute to uniqueness.
-  @rand_a_size 12 - @sub_ms_bits
 
   @ns_per_ms 1_000_000
 
@@ -71,19 +57,32 @@ defmodule UUIDv7 do
 
   """
   def bingenerate do
-    time_ns = Clock.next_ascending()
+    # For macOS (Darwin) or Windows use 10 bits.
+    # Otherwise, use 12 bits (e.g. on Linux).
+    sub_ms_bits =
+      case :os.type() do
+        {:unix, :darwin} -> 10
+        {:win32, _} -> 10
+        {_, _} -> 12
+      end
+
+    time_ns = Clock.next_ascending(sub_ms_bits)
 
     time_ms = div(time_ns, @ns_per_ms)
 
-    clock_precision = (rem(time_ns, @ns_per_ms) * Bitwise.bsl(1, @sub_ms_bits)) |> div(@ns_per_ms)
+    clock_precision = (rem(time_ns, @ns_per_ms) * Bitwise.bsl(1, sub_ms_bits)) |> div(@ns_per_ms)
 
     <<rand_a::2, rand_b::62>> = :crypto.strong_rand_bytes(8)
+
+    # On systems that only have 10 bits of increased clock precision instead of 12,
+    # we will use the extra 2 bits for randomness, to contribute to uniqueness.
+    rand_a_size = 12 - sub_ms_bits
 
     <<
       time_ms::big-unsigned-48,
       @version::4,
-      clock_precision::big-unsigned-@sub_ms_bits,
-      rand_a::@rand_a_size,
+      clock_precision::big-unsigned-size(sub_ms_bits),
+      rand_a::size(rand_a_size),
       @variant::2,
       rand_b::62
     >>
