@@ -13,12 +13,15 @@ jobs:
     strategy:
       matrix:
         os: ['ubuntu-latest']
-        elixir: ['1.16.x']
-        otp: ['26.x']
+        elixir: ['1.16.x', '1.17.x', '1.18.x']
+        otp: ['26.x', '27.x']
+        exclude:
+          - elixir: 1.16.x
+            otp: 27.x
     steps:
       # Setup.
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Set up Elixir
         id: beam
         uses: erlef/setup-beam@v1
@@ -28,7 +31,7 @@ jobs:
 
       # Build cache.
       - name: Build cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: _build
           key: build-${{matrix.os}}-${{matrix.otp}}-${{matrix.elixir}}-${{ hashFiles('lib/**/*.ex') }}
@@ -36,7 +39,7 @@ jobs:
 
       # Get and compile elixir deps.
       - name: Elixir Deps cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: deps
           key: mix-${{ matrix.os }}-${{ matrix.elixir }}-${{ matrix.otp }}-${{ hashFiles('**/mix.lock') }}
@@ -60,11 +63,11 @@ jobs:
 
       # Static analysis (Dialyzer).
       - name: Restore PLT cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         id: plt_cache
         with:
           path: priv/plts
-          key: plt-${{ matrix.os }}-${{ matrix.elixir }}-${{ matrix.otp }}
+          key: plt-${{ matrix.os }}-${{ matrix.elixir }}-${{ matrix.otp }}-${{ hashFiles('lib/**/*.ex') }}
           restore-keys: plt-${{ matrix.os }}-${{ matrix.elixir }}-${{ matrix.otp }}
 
       # Create PLTs if no cache was found
