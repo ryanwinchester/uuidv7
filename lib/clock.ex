@@ -1,7 +1,8 @@
 defmodule UUIDv7.Clock do
-  @moduledoc false
+  # See the Postgres version (in `C`):
+  # https://github.com/postgres/postgres/blob/0e42d31b0b2273c376ce9de946b59d155fac589c/src/backend/utils/adt/uuid.c#L480
 
-  @ns_per_ms 1_000_000
+  @moduledoc false
 
   # For macOS (Darwin) or Windows we would normally use 10 bits instead of 12.
   # However, it would be an extra complexity and tradeoff of checking OS at
@@ -12,13 +13,12 @@ defmodule UUIDv7.Clock do
   # The count of possible values that fit in those bits (4096 or 2^12).
   @possible_values Bitwise.bsl(1, @sub_ms_bits)
 
+  @ns_per_ms 1_000_000
+
   @minimal_step_ns div(@ns_per_ms, @possible_values) + 1
 
   @doc """
   Get an always-ascending unix nanosecond timestamp.
-
-  This is a re-implementation of the Postgres version here (in `C`):
-  https://github.com/postgres/postgres/blob/0e42d31b0b2273c376ce9de946b59d155fac589c/src/backend/utils/adt/uuid.c#L480
 
   We use `:atomics` to ensure this works with concurrent executions without race
   conditions.

@@ -33,8 +33,6 @@ defmodule UUIDv7 do
 
   @variant 2
 
-  @ns_per_ms 1_000_000
-
   # For macOS (Darwin) or Windows we would normally use 10 bits instead of 12.
   # However, it would be an extra complexity and tradeoff of checking OS at
   # runtime with some extra calcs, just for 2 bits of extra randomness for
@@ -42,6 +40,8 @@ defmodule UUIDv7 do
   @sub_ms_bits 12
 
   @possible_values Bitwise.bsl(1, @sub_ms_bits)
+
+  @ns_per_ms 1_000_000
 
   @doc """
   Generates a version 7 UUID using submilliseconds for increased clock precision.
