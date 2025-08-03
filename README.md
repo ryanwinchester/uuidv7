@@ -81,15 +81,6 @@ config :app, App.Repo,
   migration_foreign_key: [type: :binary_id]
 ```
 
-If you need to generate UUIDs in migrations (e.g. inserting or seeding data),
-then also add this to your Repo config as well:
-
-```elixir
-# config/config.exs
-config :app, App.Repo,
-  start_apps_before_migration: [:uuid_v7]
-```
-
 ## Benchmarks
 
 Run benchmarks with
