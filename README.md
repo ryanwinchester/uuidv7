@@ -13,8 +13,6 @@ to add additional sort precision to a version 7 UUID.
 ## When should I use this package?
 
 - You want sequential, time-based, ordered IDs (per-node).
-- You are willing to trade a small amount of raw performance for these
-  guarantees.
 
 NOTE: In this library, sequential UUIDs and ordering are more important than time precision and performance.
 For example, in the case of a backwards time leap, or even concurrent requests at the same time, we continue
