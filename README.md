@@ -17,9 +17,8 @@ to add additional sort precision to a version 7 UUID.
   guarantees.
 
 NOTE: In this library, sequential UUIDs and ordering are more important than time precision and performance.
-We take a slight hit in both of those areas to ensure that the UUIDs are in order. For example, in the case of a
-backwards time leap, or even concurrent requests at the same time, we continue with the previously used
-timestamp and increment the clock precision by a minimum step.
+For example, in the case of a backwards time leap, or even concurrent requests at the same time, we continue
+with the previously used timestamp and increment the clock precision by a minimum step.
 
 ## When should I not use this package?
 
